@@ -10,7 +10,7 @@ or an online field like intranet/sandbox
 
 #to be able to access the program and set an environment
 
-Clone the Repository git clone https://github.com/Timothee-U/submission_reminder_app_Nazira-umucyo
+Clone the Repository git clone https://github.com/Nazira-umucyo/submission_reminder_app_Nazira-umucyo
 cd submission_reminder_app_Nazira-umucyo 
 
 Run Environment Setup ./create_environment.sh 
