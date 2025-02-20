@@ -1,33 +1,98 @@
 #!/bin/bash
 
-# Ask for user input (your name)
-read -p "Enter your name: " name
+# ask for user's name
+read -p "Enter a name you prefer: " userName
 
-# Create the main directory
-mkdir "submission_reminder_$name"
+# Define main dir
+num="submission_reminder_${userName}"
 
-# Create subdirectories
-mkdir -p "submission_reminder_$name/app"
-mkdir -p "submission_reminder_$name/modules"
-mkdir -p "submission_reminder_$name/assets"
-mkdir -p "submission_reminder_$name/config"
+# Create directory one by one
+mkdir -p "$num/config"
+mkdir -p "$num/modules"
+mkdir -p "$num/app"
+mkdir -p "$num/assets"
 
-# Move the downloaded files into their respective directories
-mv reminder.sh "submission_reminder_$name/app/"
-mv functions.sh "submission_reminder_$name/modules/"
-mv config.env "submission_reminder_$name/config/"
-mv submissions.txt "submission_reminder_$name/assets/"
+# Create needed files
+touch "$num/config/config.env"
+touch "$num/assets/submissions.txt"
+touch "$num/app/reminder.sh"
+touch "$num/modules/functions.sh"
+touch "$num/startup.sh"
 
-# Create the startup.sh script (this is the missing file)
-cat << 'EOF' > "submission_reminder_$name/startup.sh"
-#!/bin/bash
-# This script will start up the reminder app
 
-echo "Starting the submission reminder app..."
-# Add more startup logic as needed
+# config.env
+cat << EOF > "$num/config/config.env"
+# This is the config file
+ASSIGNMENT="Shell Navigation"
+DAYS_REMAINING=2
 EOF
 
-# Make startup.sh executable
-chmod +x "submission_reminder_$name/startup.sh"
+# submissions.txt with some student records
+cat << EOF > "$num/assets/submissions.txt"
+student, assignment, submission status
+Chinemerem, Shell Navigation, not submitted
+Chiagoziem, Git, submitted
+Yannick, Shell Navigation, not submitted
+Kamikaze, Shell Basics, submitted
+Maria, Shell Navigation, not submitted
+Harerimana, Shell Navigation, not submitted
+Mbuguje, Shell Navigation, not submitted
+Sam, Shell Navigation, submitted
+EOF
 
-echo "Environment setup complete."
+# functions.sh
+cat << 'EOF' > "$num/modules/functions.sh"
+#!/bin/bash
+
+# Function to read submissions file and output students who have not submitted
+ 
+ function check_submissions {
+    local submissions_file=$1
+    echo "Checking submissions in $submissions_file"
+
+    # Skip the header and iterate through the lines
+    while IFS=, read -r student assignment status; do
+        # Remove leading and trailing whitespace
+        student=$(echo "$student" | xargs)
+        assignment=$(echo "$assignment" | xargs)
+        status=$(echo "$status" | xargs)
+
+        # Check if assignment matches and status is 'not submitted'
+        if [[ "$assignment" == "$ASSIGNMENT" && "$status" == "not submitted" ]]; then
+            echo "Reminder: $student has not submitted the $ASSIGNMENT assignment!"
+        fi
+    done < <(tail -n +2 "$submissions_file") # Skip the header
+}
+EOF
+
+# reminder.sh
+cat << 'EOF' > "$num/app/reminder.sh"
+#!/bin/bash
+#!/bin/bash
+
+# Source environment variables and helper functions
+source ./config/config.env
+source ./modules/functions.sh
+
+# Path to the submissions file
+submissions_file="./assets/submissions.txt"
+
+# Print remaining time and run the reminder function
+echo "Assignment: $ASSIGNMENT"
+echo "Days remaining to submit: $DAYS_REMAINING days"
+echo "--------------------------------------------"
+
+check_submissions $submissions_file
+EOF
+
+# startup.sh
+cat << 'EOF' > "$num/startup.sh"
+#!/bin/bash
+echo "Starting Submission Reminder App..."
+./app/reminder.sh
+EOF
+
+# execute the scripts
+chmod +x "$num/modules/functions.sh"
+chmod +x "$num/startup.sh"
+chmod +x "$num/app/reminder.sh"
